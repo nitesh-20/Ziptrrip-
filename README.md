@@ -6,6 +6,13 @@ TodoMaster Pro is a comprehensive, multi-page task management application inspir
 
 ---
 
+## 🌍 Live Deployment
+
+- 🚀 **Live Frontend (Vercel)**: [https://todo-master-app-woad.vercel.app](https://todo-master-app-woad.vercel.app)
+- ⚡ **Live Backend API (Render)**: [https://ziptrrip.onrender.com](https://ziptrrip.onrender.com)
+
+---
+
 ## 📚 Comprehensive Documentation
 
 To ensure every technical decision and feature is fully evaluated by the hiring committee, the documentation has been split into dedicated files:
@@ -22,12 +29,6 @@ To ensure every technical decision and feature is fully evaluated by the hiring 
    *A visual map and explanation of the codebase organization.*
 
 ---
-
-## 🌍 Live Deployment
-The application has been explicitly configured for a modern cloud deployment architecture.
-
-- **Frontend (Vercel)**: [https://todo-master-app-woad.vercel.app](https://todo-master-app-woad.vercel.app) *(Live Deployed App)*
-- **Backend (Render)**: [https://ziptrrip.onrender.com](https://ziptrrip.onrender.com) *(Live Deployed API)*
 
 ### Deployment Architecture
 - **Vercel (`frontend/vercel.json`)**: Configured with explicit React Router URL rewrite rules `source: "/(.*)"` to prevent 404s on page refresh, a critical step often missed by juniors.
