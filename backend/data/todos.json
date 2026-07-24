@@ -4,19 +4,47 @@
     "title": "hey",
     "description": "hey",
     "priority": "Medium",
-    "status": "Pending",
+    "status": "Completed",
     "dueDate": "",
     "createdAt": "2026-07-24T10:09:57.610Z",
-    "updatedAt": "2026-07-24T10:10:11.801Z"
+    "updatedAt": "2026-07-24T10:56:52.474Z",
+    "completedAt": "2026-07-24T10:56:52.474Z"
   },
   {
     "id": "dd6cec90-7000-48e7-a752-d6d5ff59ec5b",
     "title": "hi",
     "description": "",
     "priority": "Medium",
-    "status": "Pending",
-    "dueDate": null,
+    "status": "Completed",
+    "dueDate": "",
     "createdAt": "2026-07-24T10:32:45.097Z",
-    "updatedAt": "2026-07-24T10:32:45.097Z"
+    "updatedAt": "2026-07-24T10:57:45.112Z",
+    "category": "Others",
+    "tags": [],
+    "estimatedTime": null,
+    "completedAt": null,
+    "isPinned": true,
+    "isFavorite": true,
+    "isArchived": false
+  },
+  {
+    "id": "02462d2d-36bc-4c1c-a89f-1e84ba11e2bd",
+    "title": "macbook",
+    "description": "",
+    "priority": "Medium",
+    "status": "Pending",
+    "category": "Others",
+    "tags": [],
+    "estimatedTime": "",
+    "dueDate": null,
+    "isPinned": false,
+    "isFavorite": false,
+    "isArchived": false,
+    "isDeleted": true,
+    "order": 2,
+    "createdAt": "2026-07-24T10:52:59.884Z",
+    "updatedAt": "2026-07-24T10:53:12.513Z",
+    "completedAt": null,
+    "deletedAt": "2026-07-24T10:53:12.513Z"
   }
 ]

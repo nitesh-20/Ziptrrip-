@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -7,9 +7,14 @@ import Input from '../common/Input';
 import Select from '../common/Select';
 import Textarea from '../common/Textarea';
 import Button from '../common/Button';
+import { X } from 'lucide-react';
+
+const CATEGORIES = ['Work', 'Personal', 'Study', 'Shopping', 'Health', 'Others'];
 
 const TodoForm = ({ initialData, isEdit = false }) => {
     const navigate = useNavigate();
+    const [tags, setTags] = useState(initialData?.tags || []);
+    const [tagInput, setTagInput] = useState('');
     
     const {
         register,
@@ -22,19 +27,46 @@ const TodoForm = ({ initialData, isEdit = false }) => {
             description: initialData?.description || '',
             priority: initialData?.priority || 'Medium',
             status: initialData?.status || 'Pending',
+            category: initialData?.category || 'Others',
+            estimatedTime: initialData?.estimatedTime || '',
             dueDate: initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : ''
         }
     });
 
     const descriptionValue = watch('description');
 
+    const handleAddTag = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const trimmed = tagInput.trim();
+            if (trimmed && !tags.includes(trimmed)) {
+                if (tags.length >= 5) {
+                    toast.error('Maximum 5 tags allowed');
+                    return;
+                }
+                setTags([...tags, trimmed]);
+            }
+            setTagInput('');
+        }
+    };
+
+    const removeTag = (tagToRemove) => {
+        setTags(tags.filter(t => t !== tagToRemove));
+    };
+
     const onSubmit = async (data) => {
+        const payload = {
+            ...data,
+            tags,
+            estimatedTime: data.estimatedTime ? Number(data.estimatedTime) : null
+        };
+
         try {
             if (isEdit) {
-                await api.put(`/todos/${initialData.id}`, data);
+                await api.put(`/todos/${initialData.id}`, payload);
                 toast.success('Task updated successfully');
             } else {
-                await api.post('/todos', data);
+                await api.post('/todos', payload);
                 toast.success('Task created successfully');
             }
             navigate('/');
@@ -87,14 +119,58 @@ const TodoForm = ({ initialData, isEdit = false }) => {
                         <option value="Pending">Pending</option>
                         <option value="Completed">Completed</option>
                     </Select>
+                    
+                    <Select
+                        label="Category"
+                        error={errors.category?.message}
+                        {...register('category')}
+                    >
+                        {CATEGORIES.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </Select>
+                    
+                    <Input
+                        type="number"
+                        label="Estimated Time (minutes)"
+                        placeholder="e.g. 30"
+                        error={errors.estimatedTime?.message}
+                        {...register('estimatedTime', {
+                            min: { value: 1, message: 'Must be at least 1 minute' }
+                        })}
+                    />
                 </div>
 
-                <Input
-                    type="date"
-                    label="Due Date"
-                    error={errors.dueDate?.message}
-                    {...register('dueDate')}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <Input
+                        type="date"
+                        label="Due Date"
+                        error={errors.dueDate?.message}
+                        {...register('dueDate')}
+                    />
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-primary mb-1.5">Tags (Press Enter)</label>
+                        <Input
+                            placeholder="Add tags..."
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={handleAddTag}
+                        />
+                        {tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {tags.map(tag => (
+                                    <span key={tag} className="inline-flex items-center px-2 py-1 rounded bg-muted text-xs text-secondary">
+                                        {tag}
+                                        <button type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-primary">
+                                            <X size={12} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <div className="flex gap-3 justify-end">

@@ -29,14 +29,83 @@ export const useTodos = () => {
     const deleteTodo = async (id) => {
         try {
             await api.delete(`/todos/${id}`);
+            
+            // Optimistic update for soft delete
             setTodos((prev) => prev.filter((todo) => todo.id !== id));
-            toast.success('Todo deleted successfully');
+            
+            toast.success('Task moved to trash', {
+                action: {
+                    label: 'Undo',
+                    onClick: () => restoreTodo(id)
+                },
+                duration: 5000,
+            });
             return true;
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to delete todo');
+            toast.error(error.response?.data?.message || 'Failed to delete task');
             return false;
         }
     };
 
-    return { todos, loading, error, deleteTodo, refetch: fetchTodos };
+    const restoreTodo = async (id) => {
+        try {
+            const response = await api.post(`/todos/${id}/restore`);
+            setTodos((prev) => [...prev, response.data]);
+            toast.success('Task restored successfully');
+            return true;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to restore task');
+            return false;
+        }
+    };
+
+    const updateTodo = async (id, data) => {
+        try {
+            const response = await api.put(`/todos/${id}`, data);
+            setTodos((prev) => prev.map((todo) => (todo.id === id ? response.data : todo)));
+            return response.data;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update task');
+            throw error;
+        }
+    };
+
+    const bulkDelete = async (ids) => {
+        try {
+            await api.post('/todos/bulk/delete', { ids });
+            setTodos((prev) => prev.filter((todo) => !ids.includes(todo.id)));
+            toast.success(`Moved ${ids.length} tasks to trash`);
+            return true;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete tasks');
+            return false;
+        }
+    };
+
+    const bulkUpdate = async (ids, updates) => {
+        try {
+            await api.post('/todos/bulk/update', { ids, updates });
+            setTodos((prev) => prev.map((todo) => 
+                ids.includes(todo.id) ? { ...todo, ...updates } : todo
+            ));
+            toast.success(`Updated ${ids.length} tasks`);
+            return true;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update tasks');
+            return false;
+        }
+    };
+
+    return { 
+        todos, 
+        setTodos,
+        loading, 
+        error, 
+        deleteTodo, 
+        restoreTodo,
+        updateTodo,
+        bulkDelete,
+        bulkUpdate,
+        refetch: fetchTodos 
+    };
 };
