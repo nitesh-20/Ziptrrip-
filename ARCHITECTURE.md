@@ -4,13 +4,13 @@ The application utilizes a classic decoupled Client-Server architecture.
 
 ```mermaid
 graph TD
-    A[React Frontend] -->|REST API (Axios)| B(Express Node Backend)
-    B -->|File I/O (fs.promises)| C[(JSON File Database)]
+    A["React Frontend"] -->|"REST API (Axios)"| B["Express Node Backend"]
+    B -->|"File I/O (fs.promises)"| C[("JSON File Database")]
     
     subgraph Frontend Architecture
-    D[Pages: Dashboard, Tasks, Analytics...]
-    E[Hooks: useTodos, useDebounce]
-    F[Components: TodoCard, Dropdown, Checkbox]
+    D["Pages: Dashboard, Tasks, Analytics..."]
+    E["Hooks: useTodos, useDebounce"]
+    F["Components: TodoCard, Dropdown, Checkbox"]
     D -.-> E
     D -.-> F
     end
