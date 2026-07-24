@@ -26,7 +26,7 @@ To ensure every technical decision and feature is fully evaluated by the hiring 
 ## 🌍 Live Deployment
 The application has been explicitly configured for a modern cloud deployment architecture.
 
-- **Frontend (Vercel)**: [https://todomaster-pro.vercel.app](https://todomaster-pro.vercel.app) *(Mock URL - Configure via Vercel Dashboard)*
+- **Frontend (Vercel)**: [https://frontend-mu-five-86.vercel.app](https://frontend-mu-five-86.vercel.app) *(Live Deployed App)*
 - **Backend (Render)**: [https://intern-todo-backend.onrender.com](https://intern-todo-backend.onrender.com) *(Mock URL - Configure via Render Dashboard)*
 
 ### Deployment Architecture
