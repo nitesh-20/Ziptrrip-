@@ -1,6 +1,6 @@
 import React from 'react';
 import StatCard from './StatCard';
-import { ListTodo, CheckCircle2, Clock, AlertCircle, TrendingUp, Calendar } from 'lucide-react';
+import { ListTodo, CheckCircle2, Clock, AlertCircle, TrendingUp, Calendar, Trophy, Timer } from 'lucide-react';
 import { isToday, isOverdue } from '../../utils/dateUtils';
 
 const AnalyticsDashboard = ({ todos }) => {
@@ -8,7 +8,6 @@ const AnalyticsDashboard = ({ todos }) => {
     const total = todos.length;
     const completed = todos.filter(t => t.status === 'Completed').length;
     const pending = total - completed;
-    const archived = todos.filter(t => t.isArchived).length;
     
     const highPriority = todos.filter(t => t.priority === 'High' && t.status !== 'Completed').length;
     const dueToday = todos.filter(t => isToday(t.dueDate) && t.status !== 'Completed').length;
@@ -16,23 +15,35 @@ const AnalyticsDashboard = ({ todos }) => {
     
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
     
-    // Average completion time calculation
-    const completedTasks = todos.filter(t => t.status === 'Completed' && t.completedAt && t.createdAt);
-    let avgCompletionHours = 0;
-    if (completedTasks.length > 0) {
-        const totalMs = completedTasks.reduce((acc, t) => {
-            return acc + (new Date(t.completedAt).getTime() - new Date(t.createdAt).getTime());
-        }, 0);
-        avgCompletionHours = Math.round(totalMs / completedTasks.length / (1000 * 60 * 60));
+    // Calculate Productivity Score (0-100)
+    let productivityScore = completionRate;
+    if (overdue > 0) {
+        productivityScore = Math.max(0, productivityScore - (overdue * 5)); // Penalty for overdue
+    }
+    if (completed > 0 && overdue === 0) {
+        productivityScore = Math.min(100, productivityScore + 10); // Bonus for no overdue
+    }
+
+    // Find Longest Pending Task
+    const pendingTasks = todos.filter(t => t.status !== 'Completed');
+    let longestPendingDays = 0;
+    if (pendingTasks.length > 0) {
+        const oldestTask = pendingTasks.reduce((oldest, current) => {
+            return new Date(current.createdAt) < new Date(oldest.createdAt) ? current : oldest;
+        }, pendingTasks[0]);
+        
+        const diffTime = Math.abs(new Date() - new Date(oldestTask.createdAt));
+        longestPendingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <StatCard
-                title="Total Tasks"
-                value={total}
-                icon={ListTodo}
-                trend={`${completed} completed`}
+                title="Productivity Score"
+                value={total === 0 ? '-' : productivityScore}
+                icon={Trophy}
+                trend={productivityScore > 80 ? 'Excellent work!' : productivityScore > 50 ? 'Keep it up' : 'Needs focus'}
+                colorClass={productivityScore > 80 ? 'text-amber-500' : productivityScore > 50 ? 'text-green-600' : 'text-red-500'}
             />
             <StatCard
                 title="Completion Rate"
@@ -49,11 +60,11 @@ const AnalyticsDashboard = ({ todos }) => {
                 colorClass={dueToday > 0 ? 'text-amber-500' : 'text-primary'}
             />
             <StatCard
-                title="Overdue"
-                value={overdue}
-                icon={AlertCircle}
-                trend={overdue > 0 ? 'High priority' : 'All caught up'}
-                colorClass={overdue > 0 ? 'text-red-500' : 'text-primary'}
+                title="Longest Pending"
+                value={longestPendingDays > 0 ? `${longestPendingDays}d` : '-'}
+                icon={Timer}
+                trend="Oldest active task"
+                colorClass="text-secondary"
             />
         </div>
     );

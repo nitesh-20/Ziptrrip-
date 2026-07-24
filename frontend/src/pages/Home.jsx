@@ -81,6 +81,11 @@ const Home = () => {
         if (success) setSelectedIds([]);
     };
 
+    const handleBulkCategory = async (category) => {
+        const success = await bulkUpdate(selectedIds, { category });
+        if (success) setSelectedIds([]);
+    };
+
     const handleDuplicate = async (todo) => {
         // Mocking API call for duplication - using the form structure
         // In real app we would call a specific duplicate endpoint
@@ -256,6 +261,7 @@ const Home = () => {
                 onBulkDelete={handleBulkDelete}
                 onBulkStatus={handleBulkStatus}
                 onBulkPriority={handleBulkPriority}
+                onBulkCategory={handleBulkCategory}
             />
         </div>
     );

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, X, Filter } from 'lucide-react';
 import Input from '../common/Input';
 import Select from '../common/Select';
 import Button from '../common/Button';
 import Badge from '../common/Badge';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const CATEGORIES = ['All', 'Work', 'Personal', 'Study', 'Shopping', 'Health', 'Others'];
 
@@ -14,9 +15,21 @@ const AdvancedFilterBar = ({
     filterCategory, setFilterCategory,
     sortBy, setSortBy
 }) => {
-    const isFiltered = searchQuery || filterPriority !== 'All' || filterStatus !== 'All' || filterCategory !== 'All';
+    const [localQuery, setLocalQuery] = useState(searchQuery);
+    const debouncedQuery = useDebounce(localQuery, 300);
+
+    useEffect(() => {
+        setSearchQuery(debouncedQuery);
+    }, [debouncedQuery, setSearchQuery]);
+
+    useEffect(() => {
+        setLocalQuery(searchQuery);
+    }, [searchQuery]);
+
+    const isFiltered = localQuery || filterPriority !== 'All' || filterStatus !== 'All' || filterCategory !== 'All';
 
     const clearFilters = () => {
+        setLocalQuery('');
         setSearchQuery('');
         setFilterPriority('All');
         setFilterStatus('All');
@@ -29,9 +42,10 @@ const AdvancedFilterBar = ({
                 <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" size={18} />
                     <Input 
-                        placeholder="Search by title, description, tags..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        id="global-search-input"
+                        placeholder="Search by title, description, tags... (Press / to focus)" 
+                        value={localQuery}
+                        onChange={(e) => setLocalQuery(e.target.value)}
                         inputClassName="pl-9"
                     />
                     {searchQuery && (

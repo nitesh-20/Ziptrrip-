@@ -13,6 +13,15 @@ const BulkActionBar = ({ selectedCount, onClearSelection, onBulkDelete, onBulkSt
         { label: 'Set Low', onClick: () => onBulkPriority('Low') }
     ];
 
+    const categoryItems = [
+        { label: 'Work', onClick: () => onBulkCategory('Work') },
+        { label: 'Personal', onClick: () => onBulkCategory('Personal') },
+        { label: 'Study', onClick: () => onBulkCategory('Study') },
+        { label: 'Shopping', onClick: () => onBulkCategory('Shopping') },
+        { label: 'Health', onClick: () => onBulkCategory('Health') },
+        { label: 'Others', onClick: () => onBulkCategory('Others') }
+    ];
+
     return (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 duration-300">
             <div className="bg-primary text-white rounded-full shadow-float px-6 py-3 flex items-center gap-6 border border-primary/20">
@@ -43,6 +52,16 @@ const BulkActionBar = ({ selectedCount, onClearSelection, onBulkDelete, onBulkSt
                             </Button>
                         }
                         items={priorityItems}
+                        align="center"
+                    />
+                    
+                    <Dropdown 
+                        trigger={
+                            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white border-transparent">
+                                Category
+                            </Button>
+                        }
+                        items={categoryItems}
                         align="center"
                     />
 
