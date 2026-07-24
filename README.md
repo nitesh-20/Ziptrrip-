@@ -298,7 +298,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 - 🌐 **Portfolio**: [nitesh-portfolio-88n1.vercel.app](https://nitesh-portfolio-88n1.vercel.app/)
 - 💻 **GitHub**: [@nitesh-20](https://github.com/nitesh-20)
-- 💼 **LinkedIn**: [Nitesh Kumar Sahu](https://www.linkedin.com/in/niteshsahu20/)
+- 💼 **LinkedIn**: [Nitesh Sahu](https://www.linkedin.com/in/niteshsahu20/)
 
 ---
 *Built with precision and care for the Software Engineering Internship Assignment.*
