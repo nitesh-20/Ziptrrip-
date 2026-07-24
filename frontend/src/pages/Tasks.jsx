@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, LayoutDashboard } from 'lucide-react';
+import { Plus, ListTodo } from 'lucide-react';
 import { useTodos } from '../hooks/useTodos';
 import TodoCard from '../components/todos/TodoCard';
 import Skeleton from '../components/common/Skeleton';
-import AnalyticsDashboard from '../components/dashboard/AnalyticsDashboard';
+
 import AdvancedFilterBar from '../components/dashboard/AdvancedFilterBar';
 import BulkActionBar from '../components/dashboard/BulkActionBar';
 import {
