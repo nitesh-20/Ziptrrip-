@@ -1,19 +1,19 @@
 import React from 'react';
 
-const Badge = ({ children, variant = 'gray', className = '' }) => {
+const Badge = ({ children, variant = 'default', className = '' }) => {
     const variants = {
-        High: 'bg-red-100 text-red-800',
-        Medium: 'bg-yellow-100 text-yellow-800',
-        Low: 'bg-blue-100 text-blue-800',
-        Completed: 'bg-green-100 text-green-800',
-        Pending: 'bg-gray-100 text-gray-800',
-        gray: 'bg-gray-100 text-gray-800'
+        High: 'bg-red-50 text-red-600 border-red-200/50',
+        Medium: 'bg-orange-50 text-orange-600 border-orange-200/50',
+        Low: 'bg-blue-50 text-blue-600 border-blue-200/50',
+        Completed: 'bg-emerald-50 text-emerald-600 border-emerald-200/50',
+        Pending: 'bg-zinc-100 text-zinc-600 border-zinc-200/50',
+        default: 'bg-zinc-100 text-zinc-600 border-zinc-200/50'
     };
 
-    const activeVariant = variants[children] || variants[variant] || variants.gray;
+    const activeVariant = variants[children] || variants[variant] || variants.default;
 
     return (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${activeVariant} ${className}`}>
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium uppercase tracking-wider border ${activeVariant} ${className}`}>
             {children}
         </span>
     );

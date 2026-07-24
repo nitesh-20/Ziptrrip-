@@ -1,127 +1,144 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Edit2, Calendar, Clock, AlertCircle } from 'lucide-react';
-import { todoService } from '../services/api';
-import Spinner from '../components/common/Spinner';
+import { ArrowLeft, Edit2, Trash2, Clock, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
+import api from '../services/api';
+import toast from 'react-hot-toast';
 import Badge from '../components/common/Badge';
-import { formatDate, isOverdue } from '../utils/dateUtils';
+import { formatDate } from '../utils/dateUtils';
+import Button from '../components/common/Button';
+import Skeleton from '../components/common/Skeleton';
 
 const TodoDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [todo, setTodo] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         const fetchTodo = async () => {
             try {
-                setIsLoading(true);
-                const data = await todoService.getById(id);
-                setTodo(data);
+                const response = await api.get(`/todos/${id}`);
+                setTodo(response.data);
+                setError(null);
             } catch (error) {
-                console.error('Failed to fetch todo details:', error);
-                setError(true);
+                const message = error.response?.data?.message || 'Failed to fetch task details';
+                setError(message);
+                toast.error(message);
             } finally {
-                setIsLoading(false);
+                setLoading(false);
             }
         };
+
         fetchTodo();
     }, [id]);
 
-    if (isLoading) return <Spinner />;
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+            setIsDeleting(true);
+            try {
+                await api.delete(`/todos/${id}`);
+                toast.success('Task deleted successfully');
+                navigate('/');
+            } catch (error) {
+                toast.error(error.response?.data?.message || 'Failed to delete task');
+                setIsDeleting(false);
+            }
+        }
+    };
 
-    if (error || !todo) {
+    if (loading) {
         return (
-            <div className="card p-12 text-center max-w-2xl mx-auto">
-                <div className="bg-red-50 text-red-500 p-4 rounded-full inline-block mb-4">
-                    <AlertCircle size={48} />
+            <div className="max-w-3xl mx-auto space-y-6">
+                <Skeleton className="w-24 h-6 mb-8" />
+                <div className="bg-surface border border-border p-8 rounded-xl space-y-4">
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-20 w-full" />
+                    <div className="flex gap-4 pt-4">
+                        <Skeleton className="h-6 w-20" />
+                        <Skeleton className="h-6 w-20" />
+                    </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Todo Not Found</h3>
-                <p className="text-gray-500 mb-6">The todo you are looking for does not exist or has been deleted.</p>
-                <button onClick={() => navigate('/')} className="btn btn-primary px-6 py-2">
-                    Return to Dashboard
-                </button>
             </div>
         );
     }
 
-    const overdue = isOverdue(todo.dueDate, todo.status);
+    if (error || !todo) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                <AlertCircle className="text-red-500 mb-4" size={48} />
+                <h2 className="text-xl font-semibold mb-2">Task Not Found</h2>
+                <p className="text-secondary mb-6">{error || "The task you're looking for doesn't exist or has been removed."}</p>
+                <Button onClick={() => navigate('/')}>Back to Dashboard</Button>
+            </div>
+        );
+    }
 
     return (
-        <div className="max-w-3xl mx-auto">
-            <div className="mb-6 flex items-center justify-between">
-                <button 
-                    onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                    <ArrowLeft size={20} />
-                    <span>Back</span>
-                </button>
-                <Link 
-                    to={`/edit/${todo.id}`}
-                    className="btn btn-primary px-4 py-2 gap-2"
-                >
-                    <Edit2 size={16} />
-                    Edit Todo
-                </Link>
-            </div>
+        <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Button 
+                variant="ghost" 
+                onClick={() => navigate('/')} 
+                className="mb-6 -ml-4"
+            >
+                <ArrowLeft size={16} className="mr-2" />
+                Back to Dashboard
+            </Button>
 
-            <div className={`card overflow-hidden border-t-4 ${todo.status === 'Completed' ? 'border-t-green-500' : overdue ? 'border-t-red-500' : 'border-t-blue-500'}`}>
-                <div className="p-6 md:p-8">
-                    <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 break-words flex-grow">
+            <div className="bg-surface border border-border rounded-xl shadow-subtle overflow-hidden">
+                <div className="p-6 md:p-8 border-b border-border">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-primary leading-tight">
                             {todo.title}
                         </h1>
-                        <div className="flex gap-2 shrink-0">
-                            <Badge variant={todo.status} className="text-sm px-3 py-1">{todo.status}</Badge>
-                            <Badge variant={todo.priority} className="text-sm px-3 py-1">{todo.priority}</Badge>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge>{todo.priority}</Badge>
+                            <Badge variant={todo.status}>{todo.status}</Badge>
                         </div>
                     </div>
 
-                    <div className="prose max-w-none mb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
-                        <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg border border-gray-100 min-h-[100px]">
-                            {todo.description || <span className="text-gray-400 italic">No description provided for this task.</span>}
-                        </p>
+                    <div className="prose prose-sm max-w-none text-secondary">
+                        <p className="whitespace-pre-wrap">{todo.description || 'No description provided.'}</p>
+                    </div>
+                </div>
+
+                <div className="bg-muted/50 p-6 md:p-8 flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-center">
+                    <div className="space-y-3">
+                        <div className="flex items-center text-sm font-medium text-secondary">
+                            <Clock size={14} className="mr-2 text-primary/40" />
+                            <span>Created: {formatDate(todo.createdAt)}</span>
+                        </div>
+                        {todo.dueDate && (
+                            <div className="flex items-center text-sm font-medium text-secondary">
+                                <Calendar size={14} className="mr-2 text-primary/40" />
+                                <span>Due: {formatDate(todo.dueDate)}</span>
+                            </div>
+                        )}
+                        {todo.status === 'Completed' && (
+                            <div className="flex items-center text-sm font-medium text-emerald-600">
+                                <CheckCircle2 size={14} className="mr-2 opacity-70" />
+                                <span>Completed</span>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${overdue ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
-                                <Calendar size={20} />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500 font-medium">Due Date</p>
-                                <p className={`font-semibold ${overdue ? 'text-red-600' : 'text-gray-900'}`}>
-                                    {todo.dueDate ? formatDate(todo.dueDate) : 'Not set'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-gray-50 text-gray-600">
-                                <Clock size={20} />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500 font-medium">Created At</p>
-                                <p className="font-semibold text-gray-900">
-                                    {formatDate(todo.createdAt)}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-gray-50 text-gray-600">
-                                <Edit2 size={20} />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500 font-medium">Last Updated</p>
-                                <p className="font-semibold text-gray-900">
-                                    {formatDate(todo.updatedAt)}
-                                </p>
-                            </div>
-                        </div>
+                    <div className="flex gap-3 w-full sm:w-auto">
+                        <Button 
+                            variant="danger" 
+                            onClick={handleDelete}
+                            isLoading={isDeleting}
+                            className="flex-1 sm:flex-none"
+                        >
+                            <Trash2 size={16} className="mr-2" />
+                            Delete
+                        </Button>
+                        <Link to={`/edit/${todo.id}`} className="flex-1 sm:flex-none">
+                            <Button className="w-full">
+                                <Edit2 size={16} className="mr-2" />
+                                Edit Task
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>

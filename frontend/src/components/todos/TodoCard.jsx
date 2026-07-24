@@ -1,60 +1,54 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Trash2, Edit2, Eye } from 'lucide-react';
+import { Pencil, Trash2, Calendar, Clock } from 'lucide-react';
 import Badge from '../common/Badge';
-import { formatDate, isOverdue } from '../../utils/dateUtils';
+import { formatDate } from '../../utils/dateUtils';
+import Button from '../common/Button';
 
-const TodoCard = ({ todo, onDeleteClick }) => {
-    const overdue = isOverdue(todo.dueDate, todo.status);
-
+const TodoCard = ({ todo, onDelete }) => {
     return (
-        <div className={`card p-5 border-l-4 ${todo.status === 'Completed' ? 'border-l-green-500 bg-gray-50/50' : overdue ? 'border-l-red-500' : 'border-l-blue-500'}`}>
-            <div className="flex justify-between items-start gap-4">
-                <div className="flex-grow min-w-0">
-                    <h3 className={`text-lg font-semibold truncate ${todo.status === 'Completed' ? 'text-gray-500 line-through' : 'text-gray-900'}`} title={todo.title}>
-                        {todo.title}
-                    </h3>
-                    <p className="text-gray-500 text-sm mt-1 line-clamp-2" title={todo.description}>
-                        {todo.description || 'No description provided'}
-                    </p>
-                </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
+        <div className="group bg-surface rounded-xl border border-border p-5 shadow-subtle hover:shadow-elevated transition-all duration-200 relative flex flex-col h-full">
+            <Link to={`/todo/${todo.id}`} className="absolute inset-0 z-0 rounded-xl" aria-label={`View details for ${todo.title}`}></Link>
+            
+            <div className="flex justify-between items-start mb-3 z-10 relative pointer-events-none">
+                <div className="flex gap-2">
+                    <Badge>{todo.priority}</Badge>
                     <Badge variant={todo.status}>{todo.status}</Badge>
-                    <Badge variant={todo.priority}>{todo.priority}</Badge>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 pointer-events-auto">
+                    <Link to={`/edit/${todo.id}`}>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit todo">
+                            <Pencil size={14} />
+                        </Button>
+                    </Link>
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50" 
+                        onClick={() => onDelete(todo.id)}
+                        title="Delete todo"
+                    >
+                        <Trash2 size={14} />
+                    </Button>
                 </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                <div className="flex items-center text-sm text-gray-500 gap-1.5">
-                    <Calendar size={16} className={overdue ? 'text-red-500' : ''} />
-                    <span className={overdue ? 'text-red-600 font-medium' : ''}>
-                        {todo.dueDate ? formatDate(todo.dueDate) : 'No due date'}
-                    </span>
-                </div>
+            <div className="mb-4 flex-grow z-10 relative pointer-events-none">
+                <h3 className="text-lg font-semibold text-primary mb-1 line-clamp-1">{todo.title}</h3>
+                <p className="text-sm text-secondary line-clamp-2">{todo.description || 'No description provided.'}</p>
+            </div>
 
-                <div className="flex items-center gap-2">
-                    <Link 
-                        to={`/todos/${todo.id}`}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                        title="View Details"
-                    >
-                        <Eye size={18} />
-                    </Link>
-                    <Link 
-                        to={`/edit/${todo.id}`}
-                        className="p-1.5 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-md transition-colors"
-                        title="Edit"
-                    >
-                        <Edit2 size={18} />
-                    </Link>
-                    <button 
-                        onClick={() => onDeleteClick(todo)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                        title="Delete"
-                    >
-                        <Trash2 size={18} />
-                    </button>
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between mt-auto pt-4 border-t border-border z-10 relative pointer-events-none">
+                <div className="flex items-center text-xs font-medium text-secondary">
+                    <Clock size={12} className="mr-1.5" />
+                    <span>Created {formatDate(todo.createdAt)}</span>
                 </div>
+                {todo.dueDate && (
+                    <div className="flex items-center text-xs font-medium text-secondary">
+                        <Calendar size={12} className="mr-1.5" />
+                        <span>Due {formatDate(todo.dueDate)}</span>
+                    </div>
+                )}
             </div>
         </div>
     );

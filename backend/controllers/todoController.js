@@ -36,17 +36,12 @@ const createTodo = async (req, res, next) => {
     try {
         const { title, description, priority, status, dueDate } = req.body;
 
-        if (!title) {
-            res.status(400);
-            throw new Error('Title is required');
-        }
-
         const todos = await readTodos();
         
         const newTodo = {
             id: uuidv4(),
-            title,
-            description: description || '',
+            title: title.trim(),
+            description: description ? description.trim() : '',
             priority: priority || 'Medium',
             status: status || 'Pending',
             dueDate: dueDate || null,
@@ -77,15 +72,10 @@ const updateTodo = async (req, res, next) => {
             throw new Error('Todo not found');
         }
 
-        if (!title) {
-            res.status(400);
-            throw new Error('Title is required');
-        }
-
         const updatedTodo = {
             ...todos[todoIndex],
-            title,
-            description: description !== undefined ? description : todos[todoIndex].description,
+            title: title.trim(),
+            description: description !== undefined ? description.trim() : todos[todoIndex].description,
             priority: priority || todos[todoIndex].priority,
             status: status || todos[todoIndex].status,
             dueDate: dueDate !== undefined ? dueDate : todos[todoIndex].dueDate,

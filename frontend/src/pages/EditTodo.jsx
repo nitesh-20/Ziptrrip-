@@ -1,58 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
+import api from '../services/api';
 import toast from 'react-hot-toast';
-import { todoService } from '../services/api';
 import TodoForm from '../components/todos/TodoForm';
-import Spinner from '../components/common/Spinner';
+import Button from '../components/common/Button';
+import Skeleton from '../components/common/Skeleton';
 
 const EditTodo = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
     const [todo, setTodo] = useState(null);
-    const [fetchError, setFetchError] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchTodo = async () => {
             try {
-                const data = await todoService.getById(id);
-                setTodo(data);
+                const response = await api.get(`/todos/${id}`);
+                setTodo(response.data);
+                setError(null);
             } catch (error) {
-                console.error('Failed to fetch todo for editing:', error);
-                setFetchError(true);
+                const message = error.response?.data?.message || 'Failed to fetch task details';
+                setError(message);
+                toast.error(message);
+            } finally {
+                setLoading(false);
             }
         };
+
         fetchTodo();
     }, [id]);
 
-    const handleSubmit = async (data) => {
-        try {
-            setIsLoading(true);
-            await todoService.update(id, data);
-            toast.success('Todo updated successfully');
-            navigate('/');
-        } catch (error) {
-            console.error('Failed to update todo:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    if (fetchError) {
+    if (loading) {
         return (
-            <div className="card p-12 text-center">
-                <h3 className="text-xl font-bold text-red-600 mb-2">Todo Not Found</h3>
-                <p className="text-gray-500 mb-6">The todo you are trying to edit does not exist or has been deleted.</p>
-                <button onClick={() => navigate('/')} className="btn btn-primary px-6 py-2">
-                    Return to Dashboard
-                </button>
+            <div className="max-w-2xl mx-auto space-y-6">
+                <Skeleton className="w-24 h-6 mb-8" />
+                <div className="bg-surface border border-border p-8 rounded-xl space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-10 w-1/2" />
+                </div>
             </div>
         );
     }
 
-    if (!todo) return <Spinner />;
+    if (error || !todo) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                <AlertCircle className="text-red-500 mb-4" size={48} />
+                <h2 className="text-xl font-semibold mb-2">Task Not Found</h2>
+                <p className="text-secondary mb-6">{error || "The task you're trying to edit does not exist or has been removed."}</p>
+                <Button onClick={() => navigate('/')}>Back to Dashboard</Button>
+            </div>
+        );
+    }
 
-    return <TodoForm initialData={todo} onSubmit={handleSubmit} isLoading={isLoading} isEditing={true} />;
+    return (
+        <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Button 
+                variant="ghost" 
+                onClick={() => navigate(-1)} 
+                className="mb-6 -ml-4"
+            >
+                <ArrowLeft size={16} className="mr-2" />
+                Back
+            </Button>
+
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold tracking-tight text-primary">Edit Task</h1>
+                <p className="text-secondary mt-1">Make changes to your task.</p>
+            </div>
+
+            <TodoForm initialData={todo} isEdit={true} />
+        </div>
+    );
 };
 
 export default EditTodo;

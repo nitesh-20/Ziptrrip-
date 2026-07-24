@@ -1,96 +1,67 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { todoService } from '../services/api';
+import { CheckCircle2, ListTodo, AlertCircle, TrendingUp, Plus } from 'lucide-react';
+import { useTodos } from '../hooks/useTodos';
 import TodoCard from '../components/todos/TodoCard';
-import Spinner from '../components/common/Spinner';
-import Modal from '../components/common/Modal';
+import StatCard from '../components/dashboard/StatCard';
+import FilterBar from '../components/dashboard/FilterBar';
+import Skeleton from '../components/common/Skeleton';
+import Button from '../components/common/Button';
+import { isToday } from '../utils/dateUtils'; // We'll add this next
 
 const Home = () => {
-    const [todos, setTodos] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { todos, loading, error, deleteTodo } = useTodos();
+    
+    // Filters and Sorting
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterPriority, setFilterPriority] = useState('All');
     const [sortBy, setSortBy] = useState('Newest');
-    
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [todoToDelete, setTodoToDelete] = useState(null);
-    const [isDeleting, setIsDeleting] = useState(false);
 
-    useEffect(() => {
-        fetchTodos();
-    }, []);
-
-    const fetchTodos = async () => {
-        try {
-            setIsLoading(true);
-            const data = await todoService.getAll();
-            setTodos(data);
-        } catch (error) {
-            console.error('Failed to fetch todos:', error);
-        } finally {
-            setIsLoading(false);
-        }
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setFilterStatus('All');
+        setFilterPriority('All');
+        setSortBy('Newest');
     };
 
-    const handleDeleteClick = (todo) => {
-        setTodoToDelete(todo);
-        setDeleteModalOpen(true);
-    };
-
-    const confirmDelete = async () => {
-        if (!todoToDelete) return;
-        
-        try {
-            setIsDeleting(true);
-            await todoService.delete(todoToDelete.id);
-            setTodos(todos.filter(t => t.id !== todoToDelete.id));
-            toast.success('Todo deleted successfully');
-        } catch (error) {
-            console.error('Failed to delete todo:', error);
-        } finally {
-            setIsDeleting(false);
-            setDeleteModalOpen(false);
-            setTodoToDelete(null);
-        }
-    };
-
-    // Derived state for statistics
+    // Calculate Statistics
     const stats = useMemo(() => {
         const total = todos.length;
-        const completed = todos.filter(t => t.status === 'Completed').length;
+        const completed = todos.filter((t) => t.status === 'Completed').length;
         const pending = total - completed;
-        const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-        return { total, completed, pending, percentage };
+        const createdToday = todos.filter((t) => isToday(t.createdAt)).length;
+        
+        return { total, completed, pending, createdToday };
     }, [todos]);
 
-    // Derived state for filtered and sorted todos
-    const filteredTodos = useMemo(() => {
-        let result = todos;
+    // Apply Filters & Sorting
+    const filteredAndSortedTodos = useMemo(() => {
+        let result = [...todos];
 
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            result = result.filter(t => t.title.toLowerCase().includes(query));
+            result = result.filter(
+                (todo) =>
+                    todo.title.toLowerCase().includes(query) ||
+                    (todo.description && todo.description.toLowerCase().includes(query))
+            );
         }
 
         if (filterStatus !== 'All') {
-            result = result.filter(t => t.status === filterStatus);
+            result = result.filter((todo) => todo.status === filterStatus);
         }
 
         if (filterPriority !== 'All') {
-            result = result.filter(t => t.priority === filterPriority);
+            result = result.filter((todo) => todo.priority === filterPriority);
         }
 
-        result = [...result].sort((a, b) => {
+        result.sort((a, b) => {
             if (sortBy === 'Newest') {
                 return new Date(b.createdAt) - new Date(a.createdAt);
-            }
-            if (sortBy === 'Oldest') {
+            } else if (sortBy === 'Oldest') {
                 return new Date(a.createdAt) - new Date(b.createdAt);
-            }
-            if (sortBy === 'Priority') {
+            } else if (sortBy === 'Priority') {
                 const priorityWeight = { High: 3, Medium: 2, Low: 1 };
                 return priorityWeight[b.priority] - priorityWeight[a.priority];
             }
@@ -100,140 +71,101 @@ const Home = () => {
         return result;
     }, [todos, searchQuery, filterStatus, filterPriority, sortBy]);
 
-    if (isLoading) return <Spinner />;
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                <AlertCircle className="text-red-500 mb-4" size={48} />
+                <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+                <p className="text-secondary">{error}</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6">
-            {/* Statistics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="card p-4">
-                    <p className="text-gray-500 text-sm font-medium">Total Todos</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+                    <p className="text-secondary mt-1">Manage and track your tasks.</p>
                 </div>
-                <div className="card p-4">
-                    <p className="text-gray-500 text-sm font-medium">Completed</p>
-                    <p className="text-2xl font-bold text-green-600 mt-1">{stats.completed}</p>
-                </div>
-                <div className="card p-4">
-                    <p className="text-gray-500 text-sm font-medium">Pending</p>
-                    <p className="text-2xl font-bold text-yellow-600 mt-1">{stats.pending}</p>
-                </div>
-                <div className="card p-4">
-                    <p className="text-gray-500 text-sm font-medium">Progress</p>
-                    <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-grow bg-gray-200 rounded-full h-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${stats.percentage}%` }}></div>
-                        </div>
-                        <span className="text-sm font-bold text-gray-900">{stats.percentage}%</span>
-                    </div>
-                </div>
+                <Link to="/add">
+                    <Button>
+                        <Plus size={16} className="mr-2" />
+                        Create Task
+                    </Button>
+                </Link>
             </div>
 
-            {/* Controls */}
-            <div className="card p-4 flex flex-col md:flex-row gap-4">
-                <div className="relative flex-grow">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search size={18} className="text-gray-400" />
-                    </div>
-                    <input
-                        type="text"
-                        className="input pl-10 w-full"
-                        placeholder="Search todos by title..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+            {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <StatCard 
+                        title="Total Tasks" 
+                        value={stats.total} 
+                        icon={ListTodo}
+                        trend={stats.createdToday > 0 ? `+${stats.createdToday} created today` : 'No tasks created today'} 
+                    />
+                    <StatCard 
+                        title="Completed" 
+                        value={stats.completed} 
+                        icon={CheckCircle2}
+                        colorClass="text-emerald-600"
+                        trend={`${stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}% completion rate`}
+                    />
+                    <StatCard 
+                        title="Pending" 
+                        value={stats.pending} 
+                        icon={TrendingUp}
+                        colorClass="text-orange-600"
                     />
                 </div>
-                <div className="flex gap-2 flex-wrap md:flex-nowrap">
-                    <select 
-                        className="input min-w-[120px]"
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                        <option value="All">All Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                    <select 
-                        className="input min-w-[120px]"
-                        value={filterPriority}
-                        onChange={(e) => setFilterPriority(e.target.value)}
-                    >
-                        <option value="All">All Priority</option>
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
-                    </select>
-                    <select 
-                        className="input min-w-[120px]"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                    >
-                        <option value="Newest">Newest First</option>
-                        <option value="Oldest">Oldest First</option>
-                        <option value="Priority">Priority</option>
-                    </select>
+            )}
+
+            <FilterBar 
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
+                filterPriority={filterPriority}
+                setFilterPriority={setFilterPriority}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                onReset={handleResetFilters}
+            />
+
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-48" />)}
                 </div>
-            </div>
-
-            {/* Todo List */}
-            <div className="space-y-4">
-                {filteredTodos.length > 0 ? (
-                    filteredTodos.map(todo => (
-                        <TodoCard 
-                            key={todo.id} 
-                            todo={todo} 
-                            onDeleteClick={handleDeleteClick} 
-                        />
-                    ))
-                ) : (
-                    <div className="card p-12 text-center flex flex-col items-center">
-                        <div className="bg-gray-50 p-4 rounded-full mb-4 text-gray-400">
-                            <AlertCircle size={48} />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900">No todos found</h3>
-                        <p className="text-gray-500 mt-1 mb-6 max-w-sm">
-                            {todos.length === 0 
-                                ? "You don't have any todos yet. Get started by creating one!" 
-                                : "No todos match your current filters. Try adjusting them."}
-                        </p>
-                        {todos.length === 0 && (
-                            <Link to="/add" className="btn btn-primary px-6 py-2 gap-2">
-                                <Plus size={18} />
-                                Add Your First Todo
-                            </Link>
-                        )}
+            ) : filteredAndSortedTodos.length === 0 ? (
+                <div className="text-center py-20 bg-surface border border-border rounded-xl border-dashed">
+                    <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
+                        <ListTodo className="text-secondary" size={24} />
                     </div>
-                )}
-            </div>
-
-            {/* Delete Modal */}
-            <Modal
-                isOpen={deleteModalOpen}
-                onClose={() => !isDeleting && setDeleteModalOpen(false)}
-                title="Delete Todo"
-            >
-                <div className="space-y-4">
-                    <p className="text-gray-600">
-                        Are you sure you want to delete the todo <span className="font-semibold text-gray-900">"{todoToDelete?.title}"</span>? This action cannot be undone.
+                    <h3 className="text-lg font-medium text-primary mb-1">No tasks found</h3>
+                    <p className="text-secondary mb-6 max-w-sm mx-auto">
+                        {todos.length === 0 
+                            ? "You haven't created any tasks yet. Get started by creating your first task." 
+                            : "We couldn't find any tasks matching your current filters."}
                     </p>
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button
-                            onClick={() => setDeleteModalOpen(false)}
-                            className="btn btn-secondary px-4 py-2"
-                            disabled={isDeleting}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={confirmDelete}
-                            className="btn btn-danger px-4 py-2"
-                            disabled={isDeleting}
-                        >
-                            {isDeleting ? 'Deleting...' : 'Delete'}
-                        </button>
-                    </div>
+                    {todos.length > 0 && (
+                        <Button variant="secondary" onClick={handleResetFilters}>
+                            Clear all filters
+                        </Button>
+                    )}
                 </div>
-            </Modal>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filteredAndSortedTodos.map((todo) => (
+                        <TodoCard key={todo.id} todo={todo} onDelete={deleteTodo} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

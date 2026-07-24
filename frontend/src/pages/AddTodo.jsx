@@ -1,28 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { todoService } from '../services/api';
 import TodoForm from '../components/todos/TodoForm';
+import Button from '../components/common/Button';
 
 const AddTodo = () => {
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = async (data) => {
-        try {
-            setIsLoading(true);
-            await todoService.create(data);
-            toast.success('Todo created successfully');
-            navigate('/');
-        } catch (error) {
-            console.error('Failed to create todo:', error);
-            // Error is handled by axios interceptor
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    return (
+        <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Button 
+                variant="ghost" 
+                onClick={() => navigate(-1)} 
+                className="mb-6 -ml-4"
+            >
+                <ArrowLeft size={16} className="mr-2" />
+                Back
+            </Button>
 
-    return <TodoForm onSubmit={handleSubmit} isLoading={isLoading} />;
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold tracking-tight text-primary">Create Task</h1>
+                <p className="text-secondary mt-1">Add a new task to your workspace.</p>
+            </div>
+
+            <TodoForm />
+        </div>
+    );
 };
 
 export default AddTodo;
