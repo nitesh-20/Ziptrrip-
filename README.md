@@ -27,7 +27,7 @@ To ensure every technical decision and feature is fully evaluated by the hiring 
 The application has been explicitly configured for a modern cloud deployment architecture.
 
 - **Frontend (Vercel)**: [https://todo-master-app-woad.vercel.app](https://todo-master-app-woad.vercel.app) *(Live Deployed App)*
-- **Backend (Render)**: [https://intern-todo-backend.onrender.com](https://intern-todo-backend.onrender.com) *(Mock URL - Configure via Render Dashboard)*
+- **Backend (Render)**: [https://ziptrrip.onrender.com](https://ziptrrip.onrender.com) *(Live Deployed API)*
 
 ### Deployment Architecture
 - **Vercel (`frontend/vercel.json`)**: Configured with explicit React Router URL rewrite rules `source: "/(.*)"` to prevent 404s on page refresh, a critical step often missed by juniors.
