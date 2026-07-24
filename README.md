@@ -23,7 +23,20 @@ To ensure every technical decision and feature is fully evaluated by the hiring 
 
 ---
 
-## 🚀 Getting Started
+## 🌍 Live Deployment
+The application has been explicitly configured for a modern cloud deployment architecture.
+
+- **Frontend (Vercel)**: [https://todomaster-pro.vercel.app](https://todomaster-pro.vercel.app) *(Mock URL - Configure via Vercel Dashboard)*
+- **Backend (Render)**: [https://intern-todo-backend.onrender.com](https://intern-todo-backend.onrender.com) *(Mock URL - Configure via Render Dashboard)*
+
+### Deployment Architecture
+- **Vercel (`frontend/vercel.json`)**: Configured with explicit React Router URL rewrite rules `source: "/(.*)"` to prevent 404s on page refresh, a critical step often missed by juniors.
+- **Render (`render.yaml`)**: An Infrastructure-as-Code blueprint is provided in the root directory for instantaneous `backend` deployment on Render.
+- **Environment Parity**: Explicit `.env.production.example` files are provided in both directories to ensure `VITE_API_URL` and Node's `PORT` bind correctly in the cloud.
+
+---
+
+## 🚀 Local Development
 
 Since this project intentionally uses a flat JSON file database to strictly adhere to the "no unnecessary dependencies" assignment rule, running it is exceptionally simple.
 
