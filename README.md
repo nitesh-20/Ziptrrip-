@@ -285,16 +285,13 @@ While the application is complete and fully satisfies the assignment scope, futu
 
 ---
 
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
 
 ---
 
 ## 👨‍💻 Author
 
 **Nitesh Sahu**  
-*Senior Product Engineer Mindset | Full-Stack Developer*
+*Full-Stack Developer*
 
 - 🌐 **Portfolio**: [nitesh-portfolio-88n1.vercel.app](https://nitesh-portfolio-88n1.vercel.app/)
 - 💻 **GitHub**: [@nitesh-20](https://github.com/nitesh-20)
