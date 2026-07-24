@@ -293,7 +293,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 👨‍💻 Author
 
-**Nitesh Kumar Sahu**  
+**Nitesh Sahu**  
 *Senior Product Engineer Mindset | Full-Stack Developer*
 
 - 🌐 **Portfolio**: [nitesh-portfolio-88n1.vercel.app](https://nitesh-portfolio-88n1.vercel.app/)
