@@ -5,6 +5,9 @@ import KeyboardShortcuts from './components/common/KeyboardShortcuts';
 
 // Lazy loading pages
 const Home = lazy(() => import('./pages/Home'));
+const Tasks = lazy(() => import('./pages/Tasks'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const ArchivedTasks = lazy(() => import('./pages/ArchivedTasks'));
 const AddTodo = lazy(() => import('./pages/AddTodo'));
 const EditTodo = lazy(() => import('./pages/EditTodo'));
 const TodoDetail = lazy(() => import('./pages/TodoDetail'));
@@ -23,6 +26,9 @@ const App = () => {
                     }>
                         <Routes>
                             <Route path="/" element={<Home />} />
+                            <Route path="/tasks" element={<Tasks />} />
+                            <Route path="/analytics" element={<AnalyticsPage />} />
+                            <Route path="/archived" element={<ArchivedTasks />} />
                             <Route path="/add" element={<AddTodo />} />
                             <Route path="/edit/:id" element={<EditTodo />} />
                             <Route path="/todos/:id" element={<TodoDetail />} />
